@@ -57,7 +57,7 @@ def frequency_metric(text: str, q: dict = english_frequency):
 
         dist += ((observed - expected) ** 2) / expected
 
-    # Penalize unusual characters
+    # penalize unusual characters
     unusual = sum(
         char not in "abcdefghijklmnopqrstuvwxyz '.,!?;:-"
         for char in text
@@ -73,7 +73,7 @@ def single_byte_xor(ciphertext: bytes, key: int) -> bytes:
     return bytes(result)
 
 # best guess (lowest score), returns key, text, and score
-def best_guess(ciphertext: bytes, n = 1):
+def single_byte_xor_breaker(ciphertext: bytes, n = 1):
     decryptedtexts = []
     for key in range(128):
         decryptedtext = single_byte_xor(ciphertext, key)
@@ -108,7 +108,7 @@ def main():
     for key, text, score in decryptedtext_sorted:
         print(f"Score: {round(score, 3)}, {text.decode('ascii', errors="replace")!r}, Key: {key} ")
 
-    key, text, score = best_guess(ciphertext)
+    key, text, score = single_byte_xor_breaker(ciphertext)
     print(f"Best Guess (Key: {key}, Score: {score}):")
     print(f"{text}")
 

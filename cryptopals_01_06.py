@@ -1,4 +1,44 @@
-raw_text = """HUIfTQsPAh9PE048GmllH0kcDk4TAQsHThsBFkU2AB4BSWQgVB0dQzNTTmVS
+import base64
+
+def hamming(a: bytes, b: bytes) -> int:
+    return sum((x ^ y).bit_count() for x,y in zip(a, b))
+
+def chunker(string, chunk_size):
+    return [string[i:i+chunk_size] for i in range(0, len(string), chunk_size)]
+
+def chunks_mean_distance(chunks, n = 2):
+    size = len(chunks[0])
+    dists = [hamming(chunks[i], chunks[i+1])/size for i in range(n-1)]
+    return sum(dists)/len(dists)
+
+from cryptopals_01_03 import single_byte_xor_breaker
+from cryptopals_01_05 import repeating_key_xor
+
+def vigenere_breaker(text: bytes, min_key_size = 1, max_key_size = 41):
+    edit_dists = {}
+    for keysize in range(min_key_size, max_key_size):
+        text_chunks = chunker(text, keysize)
+        edit_dist = chunks_mean_distance(text_chunks, 10)
+        edit_dists[keysize] = edit_dist
+
+    #edit_dists_sorted = dict(sorted(edit_dists.items(),key=lambda item: item[1]))
+
+    guessed_keysize = min(edit_dists, key=edit_dists.get)
+
+    text_chunked_T = [text[i::guessed_keysize] for i in range(guessed_keysize)] # transposed chunks
+
+    guessed_key = ""
+    for chunk in text_chunked_T:
+        key, _, _ = single_byte_xor_breaker(chunk)
+        guessed_key += chr(key)
+
+    decrypted_text = repeating_key_xor(text, guessed_key)
+    return decrypted_text, guessed_key
+    
+
+def main():
+    raw_text = """
+    HUIfTQsPAh9PE048GmllH0kcDk4TAQsHThsBFkU2AB4BSWQgVB0dQzNTTmVS
 BgBHVBwNRU0HBAxTEjwMHghJGgkRTxRMIRpHKwAFHUdZEQQJAGQmB1MANxYG
 DBoXQR0BUlQwXwAgEwoFR08SSAhFTmU+Fgk4RQYFCBpGB08fWXh+amI2DB0P
 QQ1IBlUaGwAdQnQEHgFJGgkRAlJ6f0kASDoAGhNJGk9FSA8dDVMEOgFSGQEL
@@ -61,11 +101,19 @@ DxsJSw1ICFUdBgpTJjsIF00GAE1ULB1NPRpPLF5JAgJUVAUAAAYKCAFFXjUe
 DBBOFRwOBgA+T04pC0kDElMdC0VXBgYdFkU2CgtNEAEUVBwTWXhTVG5SGg8e
 AB0cRSo+AwgKRSANExlJCBQaBAsANU9TKxFJL0dMHRwRTAtPBRwQMAAATQcB
 FlRlIkw5QwA2GggaR0YBBg5ZTgIcAAw3SVIaAQcVEU8QTyEaYy0fDE4ITlhI
-Jk8DCkkcC3hFMQIEC0EbAVIqCFZBO1IdBgZUVA4QTgUWSR4QJwwRTWM="""
+Jk8DCkkcC3hFMQIEC0EbAVIqCFZBO1IdBgZUVA4QTgUWSR4QJwwRTWM=
+    """
+    text = base64.b64decode(raw_text)
+    decrypted_text, key = vigenere_breaker(text, 2, 41)
+    print("Guessed Key:", key)
+    print("Text:" )
+    print(bytes.fromhex(decrypted_text).decode("ascii"))
 
-def hamming(str1: str, str2: str) -> int:
-    a = str1.encode('ascii')
-    b = str2.encode('ascii')
-    return sum((x ^ y).bit_count() for x,y in zip(a, b))
+    with open("cryptopals_01_06_answer.txt", "w", encoding="utf-8") as file:
+        file.write(bytes.fromhex(decrypted_text).decode("ascii"))
 
-print(hamming('this is a test', 'wokka wokka!!!'))
+if __name__ == "__main__":
+    main()
+
+
+

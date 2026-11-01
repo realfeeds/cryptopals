@@ -331,11 +331,11 @@ e03555453d1e31775f37331823164c341c09e310463438481019fb0b12fa
 strings = raw_text.splitlines()
 strings_bytes = [bytes.fromhex(text) for text in strings]
 
-from cryptopals_01_03 import best_guess
+from cryptopals_01_03 import single_byte_xor_breaker
 
 best_guesses = []
 for i, string in enumerate(strings_bytes):
-    key, text, score = best_guess(string)
+    key, text, score = single_byte_xor_breaker(string)
     best_guesses.append([i, key, text, score])
 
 best_guesses_sorted = sorted(best_guesses,

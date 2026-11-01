@@ -11,6 +11,10 @@ def repeating_key_xor(ciphertext: bytes, key: str) -> hex:
         result.append(byte ^ repeating_keys[i % n])
     return bytes(result).hex()
 
-ciphertext = "Burning 'em, if you ain't quick and nimble" \
-"I go crazy when I hear a cymbal"
-print(repeating_key_xor(ciphertext.encode('ascii'), "ICE"))
+def main():
+    ciphertext = "Burning 'em, if you ain't quick and nimble" \
+    "I go crazy when I hear a cymbal"
+    print(repeating_key_xor(ciphertext.encode('ascii'), "ICE"))
+
+if __name__ == "__main__":
+    main()
